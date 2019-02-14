@@ -37,7 +37,7 @@ public class TCPInterface : MonoBehaviour
     private String screenshot_filename = "";
     private int screenshot_frame = 0;
     private GameObject canvas;
-		
+	public int targetFrameRate = 30;	
 	
 		// Use this for initialization
 		void Start ()
@@ -102,7 +102,12 @@ public class TCPInterface : MonoBehaviour
 	
 		// Update is called once per frame
 		void Update ()
-    {       
+    {    
+
+
+    	 QualitySettings.vSyncCount = 0;
+         Application.targetFrameRate = targetFrameRate;
+
         while (camsetqueue.Count > 0)
             { 
             UnityCameraSettings rec_set = camsetqueue.Dequeue();
@@ -285,8 +290,8 @@ public class TCPInterface : MonoBehaviour
 		try { 			
 			// Create listener on localhost port 8052. 			
 			//tcpListener = new TcpListener(IPAddress.Parse("130.75.53.247"), 5666);		
-			//tcpListener = new TcpListener(IPAddress.Parse("130.75.53.91"), 5666);		
-			tcpListener = new TcpListener(IPAddress.Parse("127.0.0.1"), 8052);		
+			tcpListener = new TcpListener(IPAddress.Parse("130.75.53.91"), 5666);		
+			//tcpListener = new TcpListener(IPAddress.Parse("127.0.0.1"), 8052);		
 			tcpListener.Start();              
 			Debug.Log("Server is listening");              
 			//Byte[] bytes = new Byte[1024];  
