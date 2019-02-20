@@ -1,5 +1,5 @@
 # UnityTCP
-A TCP interface for Unity
+A TCP interface for Unity (serverside)
 
 ## A scientific visualization interface for Unity
 
