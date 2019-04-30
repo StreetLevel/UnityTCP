@@ -27,9 +27,9 @@ Shader "Custom/Flat" {
 
 		_Cutoff ("Alpha Cutoff", Range(0, 1)) = 0.5
 
-		_WireframeColor ("Wireframe Color", Color) = (.3, .3, .3)
-		_WireframeSmoothing ("Wireframe Smoothing", Range(0, 10)) = .8
-		_WireframeThickness ("Wireframe Thickness", Range(0, 10)) = 0
+		_WireframeColor ("Wireframe Color", Color) = (.0, .0, .0)
+		_WireframeSmoothing ("Wireframe Smoothing", Range(0, 10)) = 0
+		_WireframeThickness ("Wireframe Thickness", Range(0, 10)) = 10
 
 		[HideInInspector] _SrcBlend ("_SrcBlend", Float) = 1
 		[HideInInspector] _DstBlend ("_DstBlend", Float) = 0
@@ -123,7 +123,7 @@ Shader "Custom/Flat" {
 			#pragma fragment MyFragmentProgram
 			#pragma geometry MyGeometryProgram
 
-			#include "MyFlatWireframe.cginc"
+			#include "MyFlat.cginc"
 
 			ENDCG
 		}
@@ -161,7 +161,7 @@ Shader "Custom/Flat" {
 
 			#define DEFERRED_PASS
 
-			#include "MyFlatWireframe.cginc"
+			#include "MyFlat.cginc"
 
 			ENDCG
 		}

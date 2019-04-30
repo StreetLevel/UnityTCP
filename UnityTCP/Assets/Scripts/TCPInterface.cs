@@ -290,8 +290,9 @@ public class TCPInterface : MonoBehaviour
 		try { 			
 			// Create listener on localhost port 8052. 			
 			//tcpListener = new TcpListener(IPAddress.Parse("130.75.53.247"), 5666);		
-			tcpListener = new TcpListener(IPAddress.Parse("130.75.53.91"), 5666);		
-			//tcpListener = new TcpListener(IPAddress.Parse("127.0.0.1"), 8052);		
+			//tcpListener = new TcpListener(IPAddress.Parse("130.75.53.91"), 5666);		
+			//tcpListener = new TcpListener(IPAddress.Parse("130.75.53.250"), 5666);		
+			tcpListener = new TcpListener(IPAddress.Parse("127.0.0.1"), 8052);		
 			tcpListener.Start();              
 			Debug.Log("Server is listening");              
 			//Byte[] bytes = new Byte[1024];  
