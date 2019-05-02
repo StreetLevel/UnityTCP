@@ -68,6 +68,8 @@ Shader "Standard_VC"
 
             Blend [_SrcBlend] [_DstBlend]
             ZWrite [_ZWrite]
+            Cull off
+
 
             CGPROGRAM
             #pragma target 3.0
