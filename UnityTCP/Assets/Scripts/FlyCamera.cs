@@ -24,16 +24,24 @@ public class FlyCamera : MonoBehaviour {
 	public Vector2 sphereCoordinates = Vector2.zero;
 	public float distance = 100.0f;
 	public float viewAxisRotation = 0.0f;
+	public float zoomRate = 1.0f;
 
 	private Vector3 lastMouse = new Vector3(255, 255, 255); //kind of in the middle of the screen, rather than at the top (play)
-	private Vector3 distanceVector = new Vector3(255, 255, 255);
+	private Vector3 distanceVector = new Vector3(0.0f, 0.0f, 0.0f);
+	private Vector2 _sphereCoordinates = Vector2.zero;
+	private Vector3 _lookAt = Vector3.zero;
+	private float _viewAxisRotation = 0.0f;
 	private float totalRun= 1.0f;
 
 	private Quaternion currentRotation;
 	private Quaternion desiredRotation;
 
 	void Awake() {
-
+		Debug.Log ("FlyCamera Awake() - RESETTING CAMERA POSITION"); // nop?
+		distanceVector.z = -distance;
+		transform.position = _lookAt+distanceVector;
+		transform.RotateAround(_lookAt, Vector3.right, _sphereCoordinates.x);
+		transform.RotateAround(_lookAt, Vector3.up, _sphereCoordinates.y);
 		// nop:
 		//transform.position.Set(0,8,-32);
 		//transform.rotation.Set(15,0,0,1);
@@ -43,11 +51,52 @@ public class FlyCamera : MonoBehaviour {
 
 	public void init(){
 		Debug.Log ("FlyCamera Awake() - RESETTING CAMERA POSITION"); // nop?
-		transform.position.Set(lookAt.x, lookAt.y, lookAt.z);
+		transform.position.Set(lookAt.x, lookAt.y, lookAt.z-distance);
 	}
 
 
 	void Update () {
+
+		distance -= Input.GetAxis("Mouse ScrollWheel") * Time.deltaTime * zoomRate * distance*(Mathf.Log(distance)+1.0f);
+		distance = Mathf.Clamp(distance, 1.0f, 1000000.0f);
+
+		if (_sphereCoordinates.x != sphereCoordinates.x)
+		{
+			Debug.Log ("Set new x rotation.");
+			transform.RotateAround(lookAt, Vector3.right, sphereCoordinates.x-_sphereCoordinates.x);
+			_sphereCoordinates.x = sphereCoordinates.x;
+		}
+
+		if (_sphereCoordinates.y != sphereCoordinates.y)
+		{
+			Debug.Log ("Set new y rotation.");
+			transform.RotateAround(lookAt, Vector3.up, sphereCoordinates.y-_sphereCoordinates.y);
+			_sphereCoordinates.y = sphereCoordinates.y;
+		}
+
+		if ((_lookAt.x != lookAt.x) || (_lookAt.y != lookAt.y) || (_lookAt.z != lookAt.z))
+		{
+			Debug.Log ("Set new lookAt.");
+			transform.Translate(lookAt-_lookAt);
+			_lookAt = lookAt;
+		}
+
+		float currentDistanceSqr = (distanceVector.x*distanceVector.x + distanceVector.y*distanceVector.y + distanceVector.z*distanceVector.z);
+		if (currentDistanceSqr != distance*distance)
+		{
+			Debug.Log ("Set new distance.");
+			float fac = distance/Mathf.Sqrt(currentDistanceSqr);
+			Vector3 scaleDistVec = distanceVector * fac;
+			transform.Translate(scaleDistVec-distanceVector);
+			distanceVector = scaleDistVec;
+		}
+
+		if (viewAxisRotation != _viewAxisRotation)
+		{
+			Debug.Log ("Set new view axis rotation.");
+			transform.RotateAround(lookAt, transform.forward, viewAxisRotation-_viewAxisRotation);
+			_viewAxisRotation = viewAxisRotation;
+		}
 
 		if (Input.GetMouseButtonDown(1))
 		{
@@ -62,12 +111,14 @@ public class FlyCamera : MonoBehaviour {
 			//lastMouse = new Vector3(transform.eulerAngles.x + lastMouse.x , transform.eulerAngles.y + lastMouse.y, 0);
 			//transform.eulerAngles = lastMouse;
 			//transform.Rotate(lastMouse.x, lastMouse.y, lastMouse.z, Space.Self);
-
 			sphereCoordinates.x = sphereCoordinates.x + lastMouse.x;
 			sphereCoordinates.y = sphereCoordinates.y + lastMouse.y;
+			_sphereCoordinates.x = sphereCoordinates.x;
+			_sphereCoordinates.y = sphereCoordinates.y;
+			transform.RotateAround(lookAt, transform.forward, -_viewAxisRotation);
 			transform.RotateAround(lookAt, Vector3.right, lastMouse.x);
-			transform.RotateAround(lookAt, Vector3.up, lastMouse.y);
-
+			transform.RotateAround(lookAt, transform.up, lastMouse.y);
+			transform.RotateAround(lookAt, transform.forward, _viewAxisRotation);
 
 			//currentRotation = transform.rotation;
 			//desiredRotation = Quaternion.AngleAxis(lastMouse.x, transform.right);
@@ -81,6 +132,7 @@ public class FlyCamera : MonoBehaviour {
 			lastMouse =  Input.mousePosition;
 			//Mouse  camera angle done.
 		}
+
 
 		//Keyboard commands
 		//float f = 0.0f;
@@ -98,6 +150,7 @@ public class FlyCamera : MonoBehaviour {
 		}
 
 		p = p * Time.deltaTime;
+		_lookAt = _lookAt + p;
 		lookAt = lookAt + p;
 		Vector3 newPosition = transform.position;
 		if (Input.GetKey(KeyCode.Space)
