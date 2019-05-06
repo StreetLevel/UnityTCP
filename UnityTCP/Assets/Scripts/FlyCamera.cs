@@ -41,10 +41,10 @@ public class FlyCamera : MonoBehaviour {
 		//transform.rotation = Quaternion.Euler(25,0,0);
 	}
 
-	public void init()
+	public void init(){
 		Debug.Log ("FlyCamera Awake() - RESETTING CAMERA POSITION"); // nop?
 		transform.position.Set(lookAt.x, lookAt.y, lookAt.z);
-	end
+	}
 
 
 	void Update () {
