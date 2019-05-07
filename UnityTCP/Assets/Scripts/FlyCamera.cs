@@ -37,21 +37,22 @@ public class FlyCamera : MonoBehaviour {
 	private Quaternion desiredRotation;
 
 	void Awake() {
-		Debug.Log ("FlyCamera Awake() - RESETTING CAMERA POSITION"); // nop?
+		Debug.Log ("Camera initialized."); // nop?
 		distanceVector.z = -distance;
 		transform.position = _lookAt+distanceVector;
 		transform.RotateAround(_lookAt, Vector3.right, _sphereCoordinates.x);
 		transform.RotateAround(_lookAt, Vector3.up, _sphereCoordinates.y);
-		// nop:
-		//transform.position.Set(0,8,-32);
-		//transform.rotation.Set(15,0,0,1);
-		//transform.position = new Vector3(0,8,-32);
-		//transform.rotation = Quaternion.Euler(25,0,0);
+		lookAt = _lookAt;
+		sphereCoordinates = _sphereCoordinates;
+		viewAxisRotation = _viewAxisRotation;
 	}
 
-	public void init(){
-		Debug.Log ("FlyCamera Awake() - RESETTING CAMERA POSITION"); // nop?
-		transform.position.Set(lookAt.x, lookAt.y, lookAt.z-distance);
+	public void SetView(Vector3 newLookAt, Vector2 newSphereCoordinates, float newViewAxisRotation, float newDistance){
+		Debug.Log ("Setting camera."); // nop?
+		lookAt = newLookAt;
+		sphereCoordinates = newSphereCoordinates;
+		viewAxisRotation = newViewAxisRotation;
+		distance = newDistance;
 	}
 
 
@@ -62,21 +63,18 @@ public class FlyCamera : MonoBehaviour {
 
 		if (_sphereCoordinates.x != sphereCoordinates.x)
 		{
-			Debug.Log ("Set new x rotation.");
 			transform.RotateAround(lookAt, Vector3.right, sphereCoordinates.x-_sphereCoordinates.x);
 			_sphereCoordinates.x = sphereCoordinates.x;
 		}
 
 		if (_sphereCoordinates.y != sphereCoordinates.y)
 		{
-			Debug.Log ("Set new y rotation.");
 			transform.RotateAround(lookAt, Vector3.up, sphereCoordinates.y-_sphereCoordinates.y);
 			_sphereCoordinates.y = sphereCoordinates.y;
 		}
 
 		if ((_lookAt.x != lookAt.x) || (_lookAt.y != lookAt.y) || (_lookAt.z != lookAt.z))
 		{
-			Debug.Log ("Set new lookAt.");
 			transform.Translate(lookAt-_lookAt);
 			_lookAt = lookAt;
 		}
@@ -84,7 +82,6 @@ public class FlyCamera : MonoBehaviour {
 		float currentDistanceSqr = (distanceVector.x*distanceVector.x + distanceVector.y*distanceVector.y + distanceVector.z*distanceVector.z);
 		if (currentDistanceSqr != distance*distance)
 		{
-			Debug.Log ("Set new distance.");
 			float fac = distance/Mathf.Sqrt(currentDistanceSqr);
 			Vector3 scaleDistVec = distanceVector * fac;
 			transform.Translate(scaleDistVec-distanceVector);
@@ -108,9 +105,6 @@ public class FlyCamera : MonoBehaviour {
 		{
 			lastMouse = Input.mousePosition - lastMouse ;
 			lastMouse = new Vector3(-lastMouse.y * camSens, lastMouse.x * camSens, 0 );
-			//lastMouse = new Vector3(transform.eulerAngles.x + lastMouse.x , transform.eulerAngles.y + lastMouse.y, 0);
-			//transform.eulerAngles = lastMouse;
-			//transform.Rotate(lastMouse.x, lastMouse.y, lastMouse.z, Space.Self);
 			sphereCoordinates.x = sphereCoordinates.x + lastMouse.x;
 			sphereCoordinates.y = sphereCoordinates.y + lastMouse.y;
 			_sphereCoordinates.x = sphereCoordinates.x;
@@ -119,18 +113,7 @@ public class FlyCamera : MonoBehaviour {
 			transform.RotateAround(lookAt, Vector3.right, lastMouse.x);
 			transform.RotateAround(lookAt, transform.up, lastMouse.y);
 			transform.RotateAround(lookAt, transform.forward, _viewAxisRotation);
-
-			//currentRotation = transform.rotation;
-			//desiredRotation = Quaternion.AngleAxis(lastMouse.x, transform.right);
-			//transform.rotation = Quaternion.Slerp(currentRotation, desiredRotation, Time.deltaTime * 50.0f);
-			/*currentRotation = transform.rotation;
-			desiredRotation = Quaternion.AngleAxis(lastMouse.y, Vector3.up);
-			transform.rotation = Quaternion.Slerp(currentRotation, desiredRotation, Time.deltaTime * 50.0f);
-			currentRotation = transform.rotation;
-			desiredRotation = Quaternion.AngleAxis(lastMouse.z, Vector3.forward);
-			transform.rotation = Quaternion.Slerp(currentRotation, desiredRotation, Time.deltaTime * 50.0f);*/
 			lastMouse =  Input.mousePosition;
-			//Mouse  camera angle done.
 		}
 
 
