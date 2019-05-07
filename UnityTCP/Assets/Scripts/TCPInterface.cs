@@ -38,6 +38,8 @@ public class TCPInterface : MonoBehaviour
     private int screenshot_frame = 0;
     private GameObject canvas;
 	public int targetFrameRate = 30;	
+	private GameObject cam;
+	private ModelCamera modelCamera;
 	
 		// Use this for initialization
 		void Start ()
@@ -67,6 +69,9 @@ public class TCPInterface : MonoBehaviour
 				tcpListenerThread = new Thread (new ThreadStart(ListenForIncommingRequests)); 		
 				tcpListenerThread.IsBackground = true; 		
 				tcpListenerThread.Start(); 
+
+				cam = GameObject.Find("Main Camera");
+				modelCamera = cam.GetComponent<ModelCamera>();
 
 		}
 
@@ -111,8 +116,7 @@ public class TCPInterface : MonoBehaviour
         while (camsetqueue.Count > 0)
             { 
             UnityCameraSettings rec_set = camsetqueue.Dequeue();
-            GameObject cam = GameObject.Find(rec_set.id);
-            rec_set.process_command(cam);
+            rec_set.process_command(cam,modelCamera);
             }
 		
 				while (meshqueue.Count > 0) {
