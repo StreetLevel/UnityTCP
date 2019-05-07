@@ -6,7 +6,8 @@ public class ModelCamera : MonoBehaviour {
 	/* Robert Gates, Maximilian Bittens, MIT License, 2019 */
 
 
-	public float camSens = 0.25f; //How sensitive it with mouse
+	public float rotSens = 0.25f; //How sensitive it with mouse
+	public float panSens = 0.00125f;
 
 	public Vector3 lookAt = Vector3.zero;
 	public Vector2 sphereCoordinates = Vector2.zero; // First is rotation around Vector3.right, Second is rotation around Vector3.up
@@ -111,7 +112,7 @@ public class ModelCamera : MonoBehaviour {
 		if (Input.GetMouseButton(1))
 		{
 			lastMouse = Input.mousePosition - lastMouse ;
-			lastMouse = new Vector3(-lastMouse.y * camSens, lastMouse.x * camSens, 0 );
+			lastMouse = new Vector3(-lastMouse.y * rotSens, lastMouse.x * rotSens, 0 );
 			transform.RotateAround(lookAt, transform.forward, -_viewAxisRotation);
 			transform.RotateAround(lookAt, Vector3.right, lastMouse.x);
 			transform.RotateAround(lookAt, transform.up, lastMouse.y);
@@ -128,8 +129,8 @@ public class ModelCamera : MonoBehaviour {
 			lastMouse2.y = Mathf.Clamp(lastMouse2.y, -1000000.0f, 1000000.0f);
 			var facx = Mathf.Log(Mathf.Abs(lastMouse2.x)+1.0f)+1.0f;
 			var facy = Mathf.Log(Mathf.Abs(lastMouse2.y)+1.0f)+1.0f;
-			lookAtDelta = -lastMouse2.x  * facx * camSens * transform.right + -lastMouse2.y  * facy * camSens * transform.up;
-			lookAt = lookAt + lookAtDelta * 0.005f;
+			lookAtDelta = -lastMouse2.x  * facx * transform.right + -lastMouse2.y  * facy * transform.up;
+			lookAt = lookAt + lookAtDelta * panSens;
 			lastMouse2 =  Input.mousePosition;
 		}
 
