@@ -57,21 +57,48 @@ public class ModelCamera : MonoBehaviour {
 
 	void Update () {
 		ProcessAngles();
+        var controlPressed = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+        var rotateEventDown = false;
+        var rotateEventGet = false;
+        var panEventDown = false;
+        var panEventGet = false;
+        if (controlPressed) {
+            rotateEventDown = Input.GetMouseButtonDown(0);
+            rotateEventGet = Input.GetMouseButton(0);
+            panEventDown = false;
+            panEventGet = false;
+        } 
+        else { 
+            rotateEventDown = Input.GetMouseButtonDown(1);
+            rotateEventGet = Input.GetMouseButton(1);
+            panEventDown = Input.GetMouseButtonDown(0);
+            panEventGet = Input.GetMouseButton(0);
+        }
+
 
 		// Set mouse down positions
-		if (Input.GetMouseButtonDown(1))
+        if (rotateEventDown)
 		{
 			lastMouse = Input.mousePosition; // $CTK reset when we begin
 		}
 
-		if (Input.GetMouseButtonDown(0))
+
+
+        if (panEventDown)
 		{
 			lastMouse2 = Input.mousePosition; // $CTK reset when we begin
 		}
 
-		// Set distance
-		distance -= Input.GetAxis("Mouse ScrollWheel") * Time.deltaTime * zoomRate * distance*(Mathf.Log(distance)+1.0f);
-		distance = Mathf.Clamp(distance, 1.0f, 1000000.0f);
+        // Set distance
+        if (!controlPressed)
+        {
+            distance -= Input.GetAxis("Mouse ScrollWheel") * Time.deltaTime * zoomRate * distance * (Mathf.Log(distance) + 1.0f);
+            distance = Mathf.Clamp(distance, 1.0f, 1000000.0f);
+        }
+        else
+        {
+            viewAxisRotation += Input.GetAxis("Mouse ScrollWheel") * zoomRate * 100.0f * Time.deltaTime;
+        }
 
 
 
@@ -109,7 +136,7 @@ public class ModelCamera : MonoBehaviour {
 			_viewAxisRotation = viewAxisRotation;
 		}
 
-		if (Input.GetMouseButton(1))
+        if (rotateEventGet)
 		{
 			lastMouse = Input.mousePosition - lastMouse ;
 			lastMouse = new Vector3(-lastMouse.y * rotSens, lastMouse.x * rotSens, 0 );
@@ -122,7 +149,7 @@ public class ModelCamera : MonoBehaviour {
 			lastMouse =  Input.mousePosition;
 		}
 
-		if (Input.GetMouseButton(0))
+        if (panEventGet)
 		{
 			lastMouse2 = Input.mousePosition - lastMouse2;
 			lastMouse2.x = Mathf.Clamp(lastMouse2.x, -1000000.0f, 1000000.0f);
