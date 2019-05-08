@@ -31,7 +31,8 @@ public class TCPInterface : MonoBehaviour
     public Shader shader_point;
     public Shader shader_line;
     public Dictionary<string, Shader> shaders;
-    private bool flag_reset_all = false;
+    private bool flag_reset = false;
+	 private string clearnum = "all";
     private bool all_visible = true;
     private bool flag_take_screenshot = false;
     private String screenshot_filename = "";
@@ -86,10 +87,41 @@ public class TCPInterface : MonoBehaviour
     {
         foreach(KeyValuePair<string,GameObject> entry in godict)
         {
+			  	Debug.Log(entry.Key);
             Destroy(entry.Value);
         }
         godict.Clear();
         meshdict.Clear();
+    }
+
+	 public void reset(int id)
+    {
+		 	var remkeys = new List<String>();
+        foreach(KeyValuePair<string,GameObject> entry in godict)
+        {
+			  var myid = int.Parse(entry.Key.Substring(0,1));
+			if (myid == id) {
+				Debug.Log(id);
+				remkeys.Add(entry.Key);
+			}
+        }
+		  foreach(String remkey in remkeys) {
+			  Destroy(godict[remkey]);
+			  godict.Remove(remkey);
+		  }
+		  remkeys.Clear();
+		  foreach(KeyValuePair<string,Mesh> entry in meshdict)
+		  {
+			 var myid = int.Parse(entry.Key.Substring(0,1));
+		  if (myid == id) {
+			  Debug.Log(id);
+			  remkeys.Add(entry.Key);
+		  }
+		  }
+		 foreach(String remkey in remkeys) {
+			 Destroy(meshdict[remkey]);
+			 meshdict.Remove(remkey);
+		 }
     }
 
     public void toggle_all ()
@@ -278,10 +310,22 @@ public class TCPInterface : MonoBehaviour
 
 				}
 
-				if (flag_reset_all)
+				if (flag_reset)
 				{
-					flag_reset_all = false;
-					reset_all ();
+					flag_reset = false;
+					if (clearnum == "all") {
+						reset_all ();
+					}
+					else {
+						try{
+							reset(int.Parse(clearnum));
+						}
+						catch (Exception e) {
+							Debug.LogWarning("Resetting failed.");
+							Debug.Log(e.ToString());
+							clearnum = "all";
+						}
+					}
 				}
 
 				if (flag_take_screenshot)
@@ -362,7 +406,13 @@ public class TCPInterface : MonoBehaviour
                                 {
                                 	if (clientMessage.Length > 14 && clientMessage.Substring(clientMessage.Length - 15, 15).Equals("UNITY_RESET_ALL"))
                                 	{
-                                		flag_reset_all = true;
+                                		flag_reset = true;
+                                		sb = new StringBuilder();
+                                	}
+											else if (clientMessage.Length > 12 && clientMessage.Substring(clientMessage.Length - 13, 12).Equals("UNITY_RESET_"))
+                                	{
+												clearnum = clientMessage.Substring(clientMessage.Length - 1, 1);
+                                		flag_reset = true;
                                 		sb = new StringBuilder();
                                 	}
                                 	else
