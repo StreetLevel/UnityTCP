@@ -101,7 +101,6 @@ public class TCPInterface : MonoBehaviour
         {
 			  var myid = int.Parse(entry.Key.Substring(0,1));
 			if (myid == id) {
-				Debug.Log(id);
 				remkeys.Add(entry.Key);
 			}
         }
@@ -114,7 +113,6 @@ public class TCPInterface : MonoBehaviour
 		  {
 			 var myid = int.Parse(entry.Key.Substring(0,1));
 		  if (myid == id) {
-			  Debug.Log(id);
 			  remkeys.Add(entry.Key);
 		  }
 		  }
@@ -154,6 +152,7 @@ public class TCPInterface : MonoBehaviour
 			}
 			catch (FormatException e) {
 				Debug.LogWarning("Invalid IP address entered.");
+				Debug.LogWarning(e.ToString());
 			}
 		}
 
