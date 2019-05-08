@@ -2,21 +2,21 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Net; 
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEditor;
-  
+
 
 public class TCPInterface : MonoBehaviour
-{	
+{
 
-	private TcpListener tcpListener; 
-	private Thread tcpListenerThread;  	
-	private TcpClient connectedTcpClient; 	
+	private TcpListener tcpListener;
+	private Thread tcpListenerThread;
+	private TcpClient connectedTcpClient;
 	private Dictionary<string,Mesh> meshdict;
 	private Dictionary<string,GameObject> godict;
 	private Queue<UnityMesh> meshqueue;
@@ -37,10 +37,16 @@ public class TCPInterface : MonoBehaviour
     private String screenshot_filename = "";
     private int screenshot_frame = 0;
     private GameObject canvas;
-	public int targetFrameRate = 30;	
+	public int targetFrameRate = 30;
+	public string listenIP = "127.0.0.1";
+	public int listenPort = 8052;
+	private string _listenIP = "127.0.0.1";
+	private int _listenPort = 8052;
 	private GameObject cam;
 	private ModelCamera modelCamera;
-	
+	public bool serverListening = true;
+	private bool _serverListening = true;
+
 		// Use this for initialization
 		void Start ()
 		{
@@ -66,9 +72,9 @@ public class TCPInterface : MonoBehaviour
         shaders["line"] = shader_line;
 
 				// Start Server
-				tcpListenerThread = new Thread (new ThreadStart(ListenForIncommingRequests)); 		
-				tcpListenerThread.IsBackground = true; 		
-				tcpListenerThread.Start(); 
+				tcpListenerThread = new Thread (new ThreadStart(ListenForIncommingRequests));
+				tcpListenerThread.IsBackground = true;
+				tcpListenerThread.Start();
 
 				cam = GameObject.Find("Main Camera");
 				modelCamera = cam.GetComponent<ModelCamera>();
@@ -80,7 +86,7 @@ public class TCPInterface : MonoBehaviour
     {
         foreach(KeyValuePair<string,GameObject> entry in godict)
         {
-            Destroy(entry.Value);      
+            Destroy(entry.Value);
         }
         godict.Clear();
         meshdict.Clear();
@@ -95,32 +101,53 @@ public class TCPInterface : MonoBehaviour
          {
 
          	ColorBlock thecolor = entry.Value.GetComponent<Button>().colors;
-            
+
          	if ( (thecolor.normalColor == Color.red && all_visible) || (thecolor.normalColor == Color.green && !all_visible) )
          	{
          		entry.Value.GetComponent<Button>().onClick.Invoke();
          	}
-         	
+
          }
         }
     }
-	
+
 		// Update is called once per frame
 		void Update ()
-    {    
+    {
+		if (listenIP != _listenIP || listenPort != _listenPort) {
+			try {
+				IPAddress.Parse(listenIP);
+				_listenPort = listenPort;
+				_listenIP = listenIP;
+			}
+			catch (FormatException e) {
+				Debug.LogWarning("Invalid IP address entered.");
+			}
+		}
 
-
+		if (serverListening != _serverListening) {
+			if (!serverListening) {
+				Debug.Log("Server stopping.");
+				tcpListener.Stop();
+			}
+			else {
+				tcpListenerThread = new Thread (new ThreadStart(ListenForIncommingRequests));
+				tcpListenerThread.IsBackground = true;
+				tcpListenerThread.Start();
+			}
+			_serverListening = serverListening;
+		}
     	 QualitySettings.vSyncCount = 0;
          Application.targetFrameRate = targetFrameRate;
 
         while (camsetqueue.Count > 0)
-            { 
+            {
             UnityCameraSettings rec_set = camsetqueue.Dequeue();
             rec_set.process_command(cam,modelCamera);
             }
-		
+
 				while (meshqueue.Count > 0) {
-					
+
 					UnityMesh rec_msh = meshqueue.Dequeue();
 					GameObject ago = null;
 					GameObject parent = null;
@@ -137,11 +164,11 @@ public class TCPInterface : MonoBehaviour
 					}
 					else
 					{
-                
+
 						parent = new GameObject();
         				parent.name = rec_msh_id;
 						godict[rec_msh_id] = parent;
-                                           
+
                         //GameObject button = (GameObject)Instantiate(SampleButton);
                         GameObject prefab = GameObject.Find("Button_clear");
                         GameObject button = (GameObject)Instantiate(prefab);
@@ -149,7 +176,7 @@ public class TCPInterface : MonoBehaviour
                         button.transform.SetParent(panel.transform);//Setting button parent
                                                                     //button.SetActive(true);
                         button.GetComponent<Button>().onClick.RemoveAllListeners();
-                    
+
                         //button.GetComponent<Button>().onClick.AddListener(OnClick);//Setting what button does when clicked
                         button.GetComponent<Button>().onClick.AddListener(() => on_button_click(parent,button) );
                         button.transform.GetChild(0).GetComponent<Text>().text = rec_msh_id;//Changing text
@@ -168,15 +195,15 @@ public class TCPInterface : MonoBehaviour
 					if (rec_msh.triangles.Length > 2) {
 							//triangle mesh
 							string id_tri_msh = rec_msh_id + id_tri + " " + id_spec;
-							
+
 							if (meshdict.ContainsKey (id_tri_msh) && godict.ContainsKey (id_tri_msh)) {
-									
+
 									Mesh msh = meshdict [id_tri_msh];
 									rec_msh.update_tri_mesh (msh);
 									ago = godict [id_tri_msh];
 
 							} else {
-									
+
 									ago = new GameObject (id_tri_msh);
 									//ago.transform.SetParent(parent.transform);
 									godict [id_tri_msh] = ago;
@@ -188,7 +215,7 @@ public class TCPInterface : MonoBehaviour
 
 									ago.transform.parent = parent.transform;
 
-									
+
 							}
 							rec_msh.process_options(godict [id_tri_msh], shaders, "surface");
 					}
@@ -197,14 +224,14 @@ public class TCPInterface : MonoBehaviour
 							//string id_tri_msh = rec_msh_id + id_tri + " " + id_spec;
 							string id_line_msh = rec_msh_id + " " + id_spec + " "+ id_line;
 							if (meshdict.ContainsKey (id_line_msh) && godict.ContainsKey (id_line_msh)) {
-									
+
 									//update mesh
 									Mesh msh = meshdict [id_line_msh];
 									rec_msh.update_line_mesh (msh);
 									ago = godict [id_line_msh]; //?
 
 							} else {
-									
+
 									//new mesh
 									ago = new GameObject (id_line_msh);
 									//ago.transform.SetParent(parent.transform);
@@ -222,14 +249,14 @@ public class TCPInterface : MonoBehaviour
 							//vertex mesh
 							string id_vert_msh = rec_msh_id + id_vert + " " + id_spec;
 							if (meshdict.ContainsKey (id_vert_msh) && godict.ContainsKey (id_vert_msh)) {
-									
+
 									//update mesh
 									Mesh msh = meshdict [id_vert_msh];
 									rec_msh.update_vert_mesh (msh);
 									ago = godict [id_vert_msh];
 
 							} else {
-									
+
 									//new mesh
 									ago = new GameObject (id_vert_msh);
 									godict [id_vert_msh] = ago;
@@ -248,7 +275,7 @@ public class TCPInterface : MonoBehaviour
 					}
 					ago = null;
 					rec_msh = null;
-						
+
 				}
 
 				if (flag_reset_all)
@@ -259,10 +286,10 @@ public class TCPInterface : MonoBehaviour
 
 				if (flag_take_screenshot)
 				{
-					
+
 					if (screenshot_frame==0)
 					{
-						
+
 						canvas.SetActive(false);
 						screenshot_frame++;
 					}
@@ -285,35 +312,35 @@ public class TCPInterface : MonoBehaviour
 								screenshot_frame=0;
 							}
 						}
-					}	
+					}
 				}
-		 
+
 		}
 
-		private void ListenForIncommingRequests () { 		
-		try { 			
-			// Create listener on localhost port 8052. 			
-			//tcpListener = new TcpListener(IPAddress.Parse("130.75.53.247"), 5666);		
-			//tcpListener = new TcpListener(IPAddress.Parse("130.75.53.91"), 5666);		
-			//tcpListener = new TcpListener(IPAddress.Parse("130.75.53.250"), 5666);		
-			tcpListener = new TcpListener(IPAddress.Parse("127.0.0.1"), 8052);		
-			tcpListener.Start();              
-			Debug.Log("Server is listening");              
-			//Byte[] bytes = new Byte[1024];  
+		private void ListenForIncommingRequests () {
+		try {
+			// Create listener on localhost port 8052.
+			//tcpListener = new TcpListener(IPAddress.Parse("130.75.53.247"), 5666);
+			//tcpListener = new TcpListener(IPAddress.Parse("130.75.53.91"), 5666);
+			//tcpListener = new TcpListener(IPAddress.Parse("130.75.53.250"), 5666);
+			tcpListener = new TcpListener(IPAddress.Parse(_listenIP), _listenPort);
+			tcpListener.Start();
+			Debug.Log("Server is listening on " + _listenIP + ":" + _listenPort.ToString());
+			//Byte[] bytes = new Byte[1024];
 			Byte[] bytes = new Byte[96000];
-			StringBuilder sb = new StringBuilder ();			
-			while (true) { 				
-				using (connectedTcpClient = tcpListener.AcceptTcpClient()) { 					
-					// Get a stream object for reading 					
-					using (NetworkStream stream = connectedTcpClient.GetStream()) { 						
-						int length; 						
-						// Read incomming stream into byte arrary. 						
-						while ((length = stream.Read(bytes, 0, bytes.Length)) != 0) { 							
-							var incommingData = new byte[length]; 							
-							Array.Copy(bytes, 0, incommingData, 0, length);  							
-							// Convert byte array to string message. 							
+			StringBuilder sb = new StringBuilder ();
+			while (true) {
+				using (connectedTcpClient = tcpListener.AcceptTcpClient()) {
+					// Get a stream object for reading
+					using (NetworkStream stream = connectedTcpClient.GetStream()) {
+						int length;
+						// Read incomming stream into byte arrary.
+						while ((length = stream.Read(bytes, 0, bytes.Length)) != 0) {
+							var incommingData = new byte[length];
+							Array.Copy(bytes, 0, incommingData, 0, length);
+							// Convert byte array to string message.
 							string clientMessage = Encoding.ASCII.GetString(incommingData);
-                            //Debug.Log("client message received as: " + clientMessage); 						
+                            //Debug.Log("client message received as: " + clientMessage);
                             if (clientMessage.Length > 24 && clientMessage.Substring(clientMessage.Length - 25, 25).Equals("UNITY_MESH_JSON_FORMATTED"))
                             {
                                 //Debug.Log ("End of Message");
@@ -340,7 +367,7 @@ public class TCPInterface : MonoBehaviour
                                 	}
                                 	else
                                 	{
-                                		if (clientMessage.Length > 15 && clientMessage.Substring(clientMessage.Length - 16, 16).Equals("UNITY_SCREENSHOT"))                             				
+                                		if (clientMessage.Length > 15 && clientMessage.Substring(clientMessage.Length - 16, 16).Equals("UNITY_SCREENSHOT"))
                                 		{
                                 			sb.Append(clientMessage.Substring(0, clientMessage.Length - 16));
                                 			screenshot_filename = sb.ToString();
@@ -353,36 +380,36 @@ public class TCPInterface : MonoBehaviour
                                 	}
                                 }
                             }
-						} 					
-					} 				
-				} 			
-			} 		
-		} 		
-		catch (SocketException socketException) { 			
-			Debug.Log("SocketException " + socketException.ToString()); 		
-		}     
+						}
+					}
+				}
+			}
+		}
+		catch (SocketException socketException) {
+			Debug.Log("SocketException " + socketException.ToString());
+		}
 	}
-		private void SendMessage() { 		
-		if (connectedTcpClient == null) {             
-			return;         
-		}  		
-		
-		try { 			
-			// Get a stream object for writing. 			
-			NetworkStream stream = connectedTcpClient.GetStream(); 			
-			if (stream.CanWrite) {                 
-				string serverMessage = "This is a message from your server."; 			
-				// Convert string message to byte array.                 
-				byte[] serverMessageAsByteArray = Encoding.ASCII.GetBytes(serverMessage); 				
-				// Write byte array to socketConnection stream.               
-				stream.Write(serverMessageAsByteArray, 0, serverMessageAsByteArray.Length);               
-				Debug.Log("Server sent his message - should be received by client");           
-			}       
-		} 		
-		catch (SocketException socketException) {             
-			Debug.Log("Socket exception: " + socketException);         
-		} 	
-	} 
+		private void SendMessage() {
+		if (connectedTcpClient == null) {
+			return;
+		}
+
+		try {
+			// Get a stream object for writing.
+			NetworkStream stream = connectedTcpClient.GetStream();
+			if (stream.CanWrite) {
+				string serverMessage = "This is a message from your server.";
+				// Convert string message to byte array.
+				byte[] serverMessageAsByteArray = Encoding.ASCII.GetBytes(serverMessage);
+				// Write byte array to socketConnection stream.
+				stream.Write(serverMessageAsByteArray, 0, serverMessageAsByteArray.Length);
+				Debug.Log("Server sent his message - should be received by client");
+			}
+		}
+		catch (SocketException socketException) {
+			Debug.Log("Socket exception: " + socketException);
+		}
+	}
 
 
     public void on_button_click(GameObject o, GameObject b)
