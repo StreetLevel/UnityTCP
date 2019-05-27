@@ -42,7 +42,7 @@ public class UnityMesh
 			0xA7,0x2F,0x9E,0xFA,0xEA,0xAB,0x2F,0xDF,0xF2,0xFA,0xFF,0x01,0x1A,0x18,0x53,0x83,
 			0xC1,0x4E,0x14,0x1B,0x00,0x00,0x00,0x00,0x49,0x45,0x4E,0x44,0xAE,0x42,0x60,0x82,
 		};
-    
+
 
 	public UnityMesh(){
 	}
@@ -50,6 +50,7 @@ public class UnityMesh
 	public Mesh new_tri_mesh(GameObject gameObject,Shader face_shader){
 
 		Mesh msh = new Mesh();
+		msh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
 		this.update_tri_mesh (msh);
 		// Set up game object with mesh;
 		gameObject.AddComponent(typeof(MeshRenderer));
@@ -62,7 +63,7 @@ public class UnityMesh
 
 		return msh;
 	}
-		
+
 	public void update_tri_mesh(Mesh msh){
 		bool facecolor = this.get_option("color") == "facecolor";
 		if (!facecolor){
@@ -101,6 +102,7 @@ public class UnityMesh
     public Mesh new_line_mesh(GameObject gameObject, Shader line_shader){
 		//Debug.Log(this.id);
 		Mesh msh = new Mesh();
+		msh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
 		this.update_line_mesh (msh);
 		// Set up game object with mesh;
 		gameObject.AddComponent(typeof(MeshRenderer));
@@ -119,6 +121,7 @@ public class UnityMesh
 
 	public Mesh new_vert_mesh(GameObject gameObject, Shader vert_shader){
 		Mesh msh = new Mesh();
+		msh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
 		this.update_vert_mesh (msh);
 		// Set up game object with mesh;
 		gameObject.AddComponent(typeof(MeshRenderer));
@@ -150,8 +153,8 @@ public class UnityMesh
     public void process_options(GameObject gameObject, Dictionary<string, Shader> shaders, string str)
 	{
 		for(int i = 0; i < this.options.Length; i++)
-		{	
-			
+		{
+
 			string[] strArr = this.options[i].Split("="[0]);
 			if (strArr[0].Trim().Equals(str+"_shader") && str.Equals("surface")){
 				//Debug.Log(strArr[1].Trim());
@@ -187,7 +190,7 @@ public class UnityMesh
         	material.SetFloat("_Metallic", 0.0f);
             SetupMaterialWithBlendMode(material, BlendMode.Opaque);
         	SetMaterialKeywords(material, WorkflowMode.Metallic);
-        	
+
             //material.EnableKeyword("_DetailAlbedoMap");
 		}
 		if (option.Equals("transparent")){
@@ -200,7 +203,7 @@ public class UnityMesh
         	material.SetFloat("_Metallic", 1.0f);
             SetupMaterialWithBlendMode(material, BlendMode.Transparent);
         	SetMaterialKeywords(material, WorkflowMode.Metallic);
-        	
+
             //material.EnableKeyword("_DetailAlbedoMap");
 		}
 
@@ -366,5 +369,5 @@ public class UnityMesh
     }
 
 
-	
+
 }
