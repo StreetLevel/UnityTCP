@@ -109,7 +109,8 @@ public class TCPInterface : MonoBehaviour
 		foreach(KeyValuePair<string,GameObject> entry in godict)
 		{
 			var myid = int.Parse(entry.Key.Substring(0,1));
-			if (myid == id) {
+			if (myid == id) 
+			{
 				remkeys.Add(entry.Key);
 			}
 		}
@@ -327,13 +328,16 @@ public class TCPInterface : MonoBehaviour
 				children.ForEach(child => Destroy(child));
 				rec_msh.draw_text(ago);
 			}
-			if (rec_msh.visible[0] || visible_list.Contains(parent.name))
+			if ( (rec_msh!=null && rec_msh.visible != null && rec_msh.visible[0] && parent != null) || (parent != null && visible_list.Contains(parent.name) ) )
 			{
 				setVisible(true,parent,buttondict[parent.name]);
 			} 
 			else
-			{
-				setVisible(false,parent,buttondict[parent.name]);
+			{	
+				if (parent != null)
+				{
+					setVisible(false,parent,buttondict[parent.name]);
+				}
 			}
 			ago = null;
 			rec_msh = null;
@@ -466,22 +470,41 @@ public class TCPInterface : MonoBehaviour
 		if (visible)
 		{
 			parent.SetActive(true);
+			//Button thebutton = button.GetComponent<Button>();
+			//ColorBlock thecolor = button.GetComponent<Button>().colors;
+			//thecolor.normalColor = Color.green;
+			//thecolor.highlightedColor = Color.green;
+			//thecolor.pressedColor = Color.green;
+			//thebutton.colors = thecolor;
+
 			Button thebutton = button.GetComponent<Button>();
-			ColorBlock thecolor = button.GetComponent<Button>().colors;
-			thecolor.normalColor = Color.green;
-			thecolor.highlightedColor = Color.green;
-			thecolor.pressedColor = Color.green;
-			thebutton.colors = thecolor;
+			ColorBlock cb = thebutton.colors;
+        	cb.normalColor = Color.green;
+        	cb.disabledColor = Color.green;
+        	cb.selectedColor = Color.green;
+        	cb.highlightedColor = Color.green;
+        	cb.pressedColor = Color.green;
+        	thebutton.colors = cb;
+
 		}
 		else
 		{
 			parent.SetActive(false);
+			//Button thebutton = button.GetComponent<Button>();
+			//ColorBlock thecolor = button.GetComponent<Button>().colors;
+			//thecolor.normalColor = Color.red;
+			//thecolor.highlightedColor = Color.red;
+			//thecolor.pressedColor = Color.red;
+			//thebutton.colors = thecolor;
+
 			Button thebutton = button.GetComponent<Button>();
-			ColorBlock thecolor = button.GetComponent<Button>().colors;
-			thecolor.normalColor = Color.red;
-			thecolor.highlightedColor = Color.red;
-			thecolor.pressedColor = Color.red;
-			thebutton.colors = thecolor;
+			ColorBlock cb = thebutton.colors;
+        	cb.normalColor = Color.red;
+        	cb.highlightedColor = Color.red;
+        	cb.pressedColor = Color.red;
+        	cb.disabledColor = Color.red;
+        	cb.selectedColor = Color.red;
+        	thebutton.colors = cb;
 		}
 
 	}
