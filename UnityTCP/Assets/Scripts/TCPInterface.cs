@@ -20,7 +20,7 @@ public class TCPInterface : MonoBehaviour
 	private Dictionary<string,Mesh> meshdict;
 	private Dictionary<string,GameObject> godict;
 	private Dictionary<string,GameObject> buttondict; //parent.id => button
-	private List<string> visible_list = new List<string>(); 
+	private List<string> visible_list = new List<string>();
 	private Queue<UnityMesh> meshqueue;
 	private Queue<UnityCameraSettings> camsetqueue;
 	private Queue<StringBuilder> stringbuilderqueue;
@@ -109,7 +109,7 @@ public class TCPInterface : MonoBehaviour
 		foreach(KeyValuePair<string,GameObject> entry in godict)
 		{
 			var myid = int.Parse(entry.Key.Substring(0,1));
-			if (myid == id) 
+			if (myid == id)
 			{
 				remkeys.Add(entry.Key);
 			}
@@ -168,28 +168,28 @@ public class TCPInterface : MonoBehaviour
 		// Update is called once per frame
 	void Update ()
 	{
-		if (listenIP != _listenIP || listenPort != _listenPort) 
+		if (listenIP != _listenIP || listenPort != _listenPort)
 		{
-			try 
+			try
 			{
 				IPAddress.Parse(listenIP);
 				_listenPort = listenPort;
 				_listenIP = listenIP;
 			}
-			catch (FormatException e) 
+			catch (FormatException e)
 			{
 				Debug.LogWarning("Invalid IP address entered.");
 				Debug.LogWarning(e.ToString());
 			}
 		}
-		if (serverListening != _serverListening) 
+		if (serverListening != _serverListening)
 		{
-			if (!serverListening) 
+			if (!serverListening)
 			{
 				Debug.Log("Server stopping.");
 				tcpListener.Stop();
 			}
-			else 
+			else
 			{
 				tcpListenerThread = new Thread (new ThreadStart(ListenForIncommingRequests));
 				tcpListenerThread.IsBackground = true;
@@ -209,7 +209,7 @@ public class TCPInterface : MonoBehaviour
 			UnityCameraSettings rec_set = camsetqueue.Dequeue();
 			rec_set.process_command(cam,modelCamera);
 		}
-		if (meshqueue.Count > 0) 
+		if (meshqueue.Count > 0)
 		{
 			UnityMesh rec_msh = meshqueue.Dequeue();
 			GameObject ago = null;
@@ -249,17 +249,17 @@ public class TCPInterface : MonoBehaviour
                 //godict[rec_msh_id + ":Button"] = button;
                 buttondict[parent.name] = button;
             }
-            if (rec_msh.triangles.Length > 2) 
+            if (rec_msh.triangles.Length > 2)
             {
 				//triangle mesh
 	           	string id_tri_msh = rec_msh_id + id_tri + " " + id_spec;
-               	if (meshdict.ContainsKey (id_tri_msh) && godict.ContainsKey (id_tri_msh)) 
+               	if (meshdict.ContainsKey (id_tri_msh) && godict.ContainsKey (id_tri_msh))
                	{
                		Mesh msh = meshdict [id_tri_msh];
                		rec_msh.update_tri_mesh (msh);
                		ago = godict [id_tri_msh];
-               	} 
-               	else 
+               	}
+               	else
                	{
                		ago = new GameObject (id_tri_msh);
 					//ago.transform.SetParent(parent.transform);
@@ -273,19 +273,19 @@ public class TCPInterface : MonoBehaviour
 				}
 	            rec_msh.process_options(godict [id_tri_msh], shaders, "surface");
 	        }
-	        if (rec_msh.lines.Length > 1) 
+	        if (rec_msh.lines.Length > 1)
 	        {
 				//line mesh
 				//string id_tri_msh = rec_msh_id + id_tri + " " + id_spec;
 	           	string id_line_msh = rec_msh_id + " " + id_spec + " "+ id_line;
-	          	if (meshdict.ContainsKey (id_line_msh) && godict.ContainsKey (id_line_msh)) 
+	          	if (meshdict.ContainsKey (id_line_msh) && godict.ContainsKey (id_line_msh))
 	          	{
 					//update mesh
 	                Mesh msh = meshdict [id_line_msh];
 	                rec_msh.update_line_mesh (msh);
 					ago = godict [id_line_msh]; //?
-				} 
-				else 
+				}
+				else
 				{
 					//new mesh
 					ago = new GameObject (id_line_msh);
@@ -298,18 +298,18 @@ public class TCPInterface : MonoBehaviour
 				}
 				rec_msh.process_options(godict [id_line_msh], shaders,  "line");
 			}
-			if (rec_msh.points.Length > 0) 
+			if (rec_msh.points.Length > 0)
 			{
 				//vertex mesh
 				string id_vert_msh = rec_msh_id + id_vert + " " + id_spec;
-				if (meshdict.ContainsKey (id_vert_msh) && godict.ContainsKey (id_vert_msh)) 
+				if (meshdict.ContainsKey (id_vert_msh) && godict.ContainsKey (id_vert_msh))
 				{
 					//update mesh
 					Mesh msh = meshdict [id_vert_msh];
 					rec_msh.update_vert_mesh (msh);
 					ago = godict [id_vert_msh];
-				} 
-				else 
+				}
+				else
 				{
 					//new mesh
 					ago = new GameObject (id_vert_msh);
@@ -331,9 +331,9 @@ public class TCPInterface : MonoBehaviour
 			if ( (rec_msh!=null && rec_msh.visible != null && rec_msh.visible[0] && parent != null) || (parent != null && visible_list.Contains(parent.name) ) )
 			{
 				setVisible(true,parent,buttondict[parent.name]);
-			} 
+			}
 			else
-			{	
+			{
 				if (parent != null)
 				{
 					setVisible(false,parent,buttondict[parent.name]);
@@ -345,17 +345,17 @@ public class TCPInterface : MonoBehaviour
 		if (flag_reset)
 		{
 			flag_reset = false;
-			if (clearnum == "all") 
+			if (clearnum == "all")
 			{
 				reset_all ();
 			}
-			else 
+			else
 			{
 				try
 				{
 					reset(int.Parse(clearnum));
 				}
-				catch (Exception e) 
+				catch (Exception e)
 				{
 					Debug.LogWarning("Resetting failed.");
 					Debug.Log(e.ToString());
@@ -387,36 +387,36 @@ public class TCPInterface : MonoBehaviour
 						flag_take_screenshot = false;
 						screenshot_filename = "";
 						screenshot_frame=0;
-					}	
+					}
 				}
-			}	
+			}
 		}
 	}
 
-	private void ListenForIncommingRequests () 
+	private void ListenForIncommingRequests ()
 	{
-		try 
+		try
 		{
-			tcpListener = new TcpListener(IPAddress.Parse("130.75.53.87"), 5666);
+			//tcpListener = new TcpListener(IPAddress.Parse("130.75.53.87"), 5666);
 			//tcpListener = new TcpListener(IPAddress.Parse("130.75.53.91"), 5666);
 			//tcpListener = new TcpListener(IPAddress.Parse("130.75.53.250"), 5666);
-			//tcpListener = new TcpListener(IPAddress.Parse(_listenIP), _listenPort);
+			tcpListener = new TcpListener(IPAddress.Parse(_listenIP), _listenPort);
 			tcpListener.Start();
 			Debug.Log("Server is listening on " + _listenIP + ":" + _listenPort.ToString());
 			//Byte[] bytes = new Byte[1024];
 			Byte[] bytes = new Byte[9600];
 			//StringBuilder sb = new StringBuilder ();
-			while (true) 
+			while (true)
 			{
-				using (connectedTcpClient = tcpListener.AcceptTcpClient()) 
+				using (connectedTcpClient = tcpListener.AcceptTcpClient())
 				{
 					// Get a stream object for reading
-					using (NetworkStream stream = connectedTcpClient.GetStream()) 
-					{	
+					using (NetworkStream stream = connectedTcpClient.GetStream())
+					{
 						StringBuilder sb = new StringBuilder ();
 						int length;
 						// Read incomming stream into byte arrary.
-						while ((length = stream.Read(bytes, 0, bytes.Length)) != 0) 
+						while ((length = stream.Read(bytes, 0, bytes.Length)) != 0)
 						{
 							var incommingData = new byte[length];
 							Array.Copy(bytes, 0, incommingData, 0, length);
@@ -424,30 +424,30 @@ public class TCPInterface : MonoBehaviour
 							string clientMessage = Encoding.ASCII.GetString(incommingData);
                             //Debug.Log("client message received as: " + clientMessage);
                             sb.Append(clientMessage);
-							
+
 						}
 						stringbuilderqueue.Enqueue(sb);
 					}
 				}
 			}
 		}
-		catch (SocketException socketException) 
+		catch (SocketException socketException)
 		{
 			Debug.Log("SocketException " + socketException.ToString());
 		}
 	}
-	
-	private void SendMessage() 
+
+	private void SendMessage()
 	{
-		if (connectedTcpClient == null) 
+		if (connectedTcpClient == null)
 		{
 			return;
 		}
-		try 
+		try
 		{
 			// Get a stream object for writing.
 			NetworkStream stream = connectedTcpClient.GetStream();
-			if (stream.CanWrite) 
+			if (stream.CanWrite)
 			{
 				string serverMessage = "This is a message from your server.";
 				// Convert string message to byte array.
@@ -457,7 +457,7 @@ public class TCPInterface : MonoBehaviour
 				Debug.Log("Server sent his message - should be received by client");
 			}
 		}
-		catch (SocketException socketException) 
+		catch (SocketException socketException)
 		{
 			Debug.Log("Socket exception: " + socketException);
 		}
@@ -522,7 +522,7 @@ public class TCPInterface : MonoBehaviour
 		else
 		{
 			visible_list.Add(o.name);
-			setVisible(true, o, b);	
+			setVisible(true, o, b);
 		}
 	}
 
